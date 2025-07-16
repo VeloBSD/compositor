@@ -1,0 +1,3 @@
+[submodule "sys/vlaunch"]
+	path = sys/vlaunch
+	url = https://github.com/VeloBSD/vlaunch
