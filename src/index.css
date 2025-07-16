@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@import "./styles/inter.css";
+@import "./styles/sarabun.css";
+
+/* CSS */
+:root {
+  font-family: Inter, "Sarabun", sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  background-color: black;
+  /* fix for Chrome */
+}
+
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: InterVariable, sans-serif;
+  }
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes slide {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 256px 224px;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion) {
+
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+  }
+}
