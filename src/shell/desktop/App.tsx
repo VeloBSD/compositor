@@ -1,9 +1,89 @@
 import Topbar from "./topbar";
+import Dock from "./dock";
 import { defaultConfig } from "../../config/default";
 import Cursor from "../../assets/cursor.svg";
 import { useTransition, animated } from "@react-spring/web";
+import { useEffect, useState } from "react";
+import { WebSocketAPIService } from "../../midleware";
+
 const wallpaper = defaultConfig.ui.wallpaper;
+
 function App() {
+    const [systemStatus, setSystemStatus] = useState<any>(null);
+    const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+    const [wsService] = useState(() => WebSocketAPIService.getInstance());
+
+    useEffect(() => {
+        // Initialize WebSocket connection
+        const initializeWebSocket = async () => {
+            try {
+                setConnectionStatus('connecting');
+                await wsService.connect();
+                setConnectionStatus('connected');
+
+                // Set up real-time message handlers
+                wsService.onRealtimeMessage('system_update', (data) => {
+                    console.log('📊 System update received:', data);
+                    setSystemStatus(data);
+                });
+
+                wsService.onRealtimeMessage('notification', (data) => {
+                    console.log('🔔 Notification received:', data);
+                    // Handle notifications here
+                });
+
+                wsService.onRealtimeMessage('desktop_event', (data) => {
+                    console.log('🖥️ Desktop event received:', data);
+                    // Handle desktop events here
+                });
+
+                // Get initial system status
+                const status = await wsService.getSystemStatus();
+                setSystemStatus(status);
+            } catch (error) {
+                console.error('Failed to initialize WebSocket:', error);
+                setConnectionStatus('disconnected');
+            }
+        };
+
+        initializeWebSocket();
+
+        // Monitor connection status
+        const statusInterval = setInterval(() => {
+            if (wsService.isConnected()) {
+                setConnectionStatus('connected');
+            } else {
+                setConnectionStatus('disconnected');
+            }
+        }, 5000);
+
+        return () => {
+            clearInterval(statusInterval);
+            wsService.offRealtimeMessage('system_update');
+            wsService.offRealtimeMessage('notification');
+            wsService.offRealtimeMessage('desktop_event');
+        };
+    }, [wsService]);
+
+    // Connection status indicator
+    const getConnectionStatusColor = () => {
+        switch (connectionStatus) {
+            case 'connected': return 'text-green-400';
+            case 'connecting': return 'text-yellow-400';
+            case 'disconnected': return 'text-red-400';
+            default: return 'text-gray-400';
+        }
+    };
+
+    const getConnectionStatusText = () => {
+        switch (connectionStatus) {
+            case 'connected': return '🟢 Connected';
+            case 'connecting': return '🟡 Connecting...';
+            case 'disconnected': return '🔴 Disconnected';
+            default: return '⚪ Unknown';
+        }
+    };
+
     return (
         <main className=""
             style={{
@@ -17,9 +97,15 @@ function App() {
             }}
         >
             <Topbar />
-            <div className="h-screen w-screen flex items-center justify-center ">
-
+            
+      
+     
+            <div className="h-screen w-screen flex items-center justify-center">
+                {/* Desktop content area */}
+          
             </div>
+            
+            <Dock />
         </main>
     );
 }

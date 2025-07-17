@@ -11,6 +11,8 @@
 #define PORT 3001
 #define BUFFER_SIZE 1024
 
+#include "logind.h"
+
 // PAM conversation (no pam_misc needed!)
 static int pam_conv(int num_msg, const struct pam_message **msg,
                     struct pam_response **resp, void *appdata_ptr) {
@@ -29,6 +31,17 @@ static int pam_conv(int num_msg, const struct pam_message **msg,
 
     *resp = reply;
     return PAM_SUCCESS;
+}
+
+int init_logind(void) {
+    printf("🔐 Initializing login daemon...\n");
+    // Add any initialization logic here
+    return 0;
+}
+
+void cleanup_logind(void) {
+    printf("🔐 Cleaning up login daemon...\n");
+    // Add any cleanup logic here
 }
 
 int authenticate_user(const char *username, const char *password) {
@@ -78,8 +91,10 @@ int parse_login_request(const char *json_str, char *username, char *password) {
         return 0;
     }
 
-    strncpy(username, json_object_get_string(username_obj), 255);
-    strncpy(password, json_object_get_string(password_obj), 255);
+    strncpy(username, json_object_get_string(username_obj), MAX_USERNAME_LEN - 1);
+    strncpy(password, json_object_get_string(password_obj), MAX_PASSWORD_LEN - 1);
+    username[MAX_USERNAME_LEN - 1] = '\0';
+    password[MAX_PASSWORD_LEN - 1] = '\0';
 
     json_object_put(root);
     return 1;
@@ -100,7 +115,7 @@ char *create_response(int success, const char *message, json_object *user_data) 
 
 void handle_request(int client_socket) {
     char buffer[BUFFER_SIZE];
-    char username[256], password[256];
+    char username[MAX_USERNAME_LEN], password[MAX_PASSWORD_LEN];
     char *json_start;
 
     int bytes_read = read(client_socket, buffer, BUFFER_SIZE - 1);
@@ -167,6 +182,51 @@ void handle_request(int client_socket) {
     write(client_socket, http_res, strlen(http_res));
     free(json_res);
     close(client_socket);
+}
+
+int start_logind_server(int port, int *server_socket_ptr) {
+    int server_socket, client_socket;
+    struct sockaddr_in server_addr;
+    socklen_t addr_len = sizeof(server_addr);
+
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket < 0) {
+        perror("Socket");
+        return 1;
+    }
+
+    *server_socket_ptr = server_socket;
+
+    int opt = 1;
+    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Bind");
+        close(server_socket);
+        return 1;
+    }
+
+    if (listen(server_socket, 5) < 0) {
+        perror("Listen");
+        close(server_socket);
+        return 1;
+    }
+
+    printf("🌐 Login daemon listening on port %d\n", port);
+
+    while (1) {
+        client_socket = accept(server_socket, (struct sockaddr *)&server_addr, &addr_len);
+        if (client_socket >= 0) {
+            handle_request(client_socket);
+        }
+    }
+
+    close(server_socket);
+    return 0;
 }
 
 int main() {
