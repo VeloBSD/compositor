@@ -5,6 +5,7 @@ import Cursor from "../../assets/cursor.svg";
 import { useTransition, animated } from "@react-spring/web";
 import { useEffect, useState } from "react";
 import { WebSocketAPIService } from "../../midleware";
+import AppGallery from "@/bin/appgallery";
 
 const wallpaper = defaultConfig.ui.wallpaper;
 
@@ -93,18 +94,18 @@ function App() {
                 filter: wallpaper.blur ? "blur(8px)" : "none",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
-                cursor: `url(${Cursor}) 0 0, auto`, 
+                cursor: `url(${Cursor}) 0 0, auto`,
             }}
         >
             <Topbar />
-            
-      
-     
+
+
+
             <div className="h-screen w-screen flex items-center justify-center">
                 {/* Desktop content area */}
-          
+                <AppGallery />
             </div>
-            
+
             <Dock />
         </main>
     );

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<style>
+    :root {
+        font-family: Inter;
+    }
+</style>
+
+<body class="min-h-screen bg-black p-8 flex items-center justify-center text-white">
+    <div class="max-w-2xl w-full bg-zinc-900 rounded-lg border border-zinc-800">
+        <!-- Title Bar -->
+        <div class="bg-zinc-800 px-2 py-2 rounded-t-lg border-b border-zinc-700">
+            <div class="flex items-center justify-between">
+
+                <div class="text-xs font-medium text-zinc-300">Terminal</div>
+                <div class="flex items-center space-x-3">
+                    <!-- Window Controls -->
+                    <div
+                        class="w-4 h-4 flex items-center justify-center cursor-pointer hover:bg-zinc-700 rounded transition-colors">
+                        <i data-lucide="minus" class="w-3 h-3 text-zinc-400"></i>
+                    </div>
+                    <div
+                        class="w-4 h-4 flex items-center justify-center cursor-pointer hover:bg-zinc-700 rounded transition-colors">
+                        <i data-lucide="square" class="w-3 h-3 text-zinc-400"></i>
+                    </div>
+                    <div
+                        class="w-4 h-4 flex items-center justify-center cursor-pointer hover:bg-zinc-700 rounded transition-colors">
+                        <i data-lucide="x" class="w-4 h-4 text-zinc-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="bg-zinc-900 p-6 rounded-b-lg">
+
+           
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
