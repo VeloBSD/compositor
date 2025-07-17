@@ -18,6 +18,7 @@
     "bun-plugin-tailwind": "^0.0.14",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "express-session": "^1.18.1",
     "framer-motion": "^12.23.5",
     "lucide": "^0.525.0",
     "lucide-react": "^0.525.0",
@@ -31,6 +32,7 @@
     "@types/bun": "latest",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/express-session": "^1.18.2",
     "@types/node": "^24.0.14",
     "@types/react": "^19",
     "@types/react-dom": "^19"

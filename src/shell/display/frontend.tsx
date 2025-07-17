@@ -4,7 +4,7 @@
  *
  * It is included in `src/index.html`.
  */
-import Topbar from "./components/topbar";
+// import Topbar from "../../components/topbar";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 

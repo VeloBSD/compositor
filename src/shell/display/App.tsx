@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useTransition, animated } from "@react-spring/web";
 // import "./index.css";
 
-import Login from "./components/login";
-import Splash from "./components/boot/splash";
-import Cursor from "./assets/cursor.svg";
+import Login from "../../components/login";
+import Splash from "../../components/boot/splash";
+import Cursor from "../../assets/cursor.svg";
 
 export function App() {
   const [isBooting, setIsBooting] = useState(true);

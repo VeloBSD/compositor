@@ -1,18 +1,17 @@
 @import "tailwindcss";
-@import "./styles/inter.css";
-@import "./styles/sarabun.css";
-
+@import "../styles/inter.css";
 /* CSS */
 :root {
-  font-family: Inter, "Sarabun", sans-serif;
+  font-family: Inter, Sarabun, sans-serif;
   font-feature-settings: 'liga' 1, 'calt' 1;
   background-color: black;
   /* fix for Chrome */
+  letter-spacing: -0.02em;
 }
 
 @supports (font-variation-settings: normal) {
   :root {
-    font-family: InterVariable, sans-serif;
+    font-family: InterVariable,Sarabun,  sans-serif;
   }
 }
 

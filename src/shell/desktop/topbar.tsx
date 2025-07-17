@@ -29,27 +29,27 @@ function Topbar() {
 
     return (
         <>
-            <div className="h-8 fixed text-xs w-full flex items-center justify-between px-4 z-20">
-                <div className="items-center gap-2 hidden">
+            <div className=" h-8 fixed text-xs w-screen flex items-center justify-between px-4 z-20 invert">
+                <div className="items-center gap-2 flex">
                     <div>
                         <b>Workspace</b>
                     </div>
-                    <div className="border-r border-white h-4 opacity-40" />
+                    <div className="border-r border-black h-4 opacity-40" />
                     <div className="flex items-center gap-3">
-                        <span className="text-white font-bold">Velobsd Demo</span>
+                        <span className="text-black font-bold">Velobsd Demo</span>
                         <span className="opacity-50">·</span>
-                        <span className="text-white">File</span>
+                        <span className="text-black">File</span>
                         <span className="opacity-50">·</span>
-                        <span className="text-white">Edit</span>
+                        <span className="text-black">Edit</span>
                         <span className="opacity-50">·</span>
-                        <span className="text-white">Help</span>
+                        <span className="text-black">Help</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-white font-bold">
+                    <span className="text-black font-bold">
                         {currentTime}
                     </span>
-                    <span className="text-white font-bold">
+                    <span className="text-black font-bold">
                         {currentDate}
                     </span>
                 </div>

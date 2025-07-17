@@ -1,1 +1,1 @@
-## in development
+# Velo Desktop Window Compositor

@@ -565,8 +565,95 @@ function Login() {
 
     if (isUserSelectMode) {
         return (
+            <>
+                <Topbar />
+                <div
+                    className="w-screen h-screen flex items-center justify-center overflow-hidden"
+                    style={{
+                        backgroundImage: `url(${wallpaper.path})`,
+                        backgroundSize: wallpaper.fit,
+                        opacity: wallpaper.opacity,
+                        filter: wallpaper.blur ? "blur(8px)" : "none",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                    }}
+                    onContextMenu={showContextMenu}
+                >
+                    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+
+                    {/* Screen reader announcements */}
+                    <div aria-live="polite" aria-atomic="true" className="sr-only">
+                        {announcement}
+                    </div>
+
+                    <div className="relative z-10 flex flex-col items-center">
+                        <div className="flex flex-col space-y-4" role="list">
+                            {availableUsers.map((user, index) => (
+                                <button
+                                    key={user.username}
+                                    onClick={() => handleUserSelect(user)}
+                                    onKeyDown={(e) => handleUserSelectKeyDown(e, user)}
+                                    className="flex items-center space-x-4 p-4 w-128 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent select-none"
+                                    aria-label={`Select ${user.displayName}, username: ${user.username}`}
+                                    role="listitem"
+                                    autoFocus={index === 0}
+                                >
+                                    <div className="w-12 h-12 rounded-full bg-white/10 p-0.5 flex-shrink-0">
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                borderRadius: '9999px',
+                                                backgroundImage: `url(${user.avatar})`,
+                                                backgroundSize: 'cover',
+                                                backgroundPosition: 'center',
+                                                backgroundRepeat: 'no-repeat',
+                                                pointerEvents: 'none',
+                                                userSelect: 'none',
+                                            }}
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+                                    <div className="text-left flex-1 min-w-0">
+                                        <div className="text-white font-medium text-base truncate select-none">{user.displayName}</div>
+                                        <div className="text-white/70 text-sm truncate select-none">/users/{user.username}</div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={handleUserSwitch}
+                            className="mt-8 text-white/70 hover:text-white text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded px-2 py-1"
+                            aria-label="Go back to login screen"
+                        >
+                            Back to Login
+                        </button>
+                    </div>
+
+                    {/* Power Button */}
+                    <div className="absolute bottom-6 right-6">
+                        <PowerButton />
+                    </div>
+
+                    {/* Context Menu */}
+                    <ContextMenu
+                        visible={contextMenu.visible}
+                        x={contextMenu.x}
+                        y={contextMenu.y}
+                        onClose={hideContextMenu}
+                    />
+                </div>
+            </>
+        );
+    }
+
+    return (
+        <>
+            <Topbar />
             <div
                 className="w-screen h-screen flex items-center justify-center overflow-hidden"
+                onContextMenu={showContextMenu}
                 style={{
                     backgroundImage: `url(${wallpaper.path})`,
                     backgroundSize: wallpaper.fit,
@@ -575,8 +662,11 @@ function Login() {
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                 }}
-                onContextMenu={showContextMenu}
             >
+
+
+                {/* Background image */}
+                {/* Background blur effect */}
                 <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
 
                 {/* Screen reader announcements */}
@@ -584,52 +674,92 @@ function Login() {
                     {announcement}
                 </div>
 
-                <div className="relative z-10 flex flex-col items-center">
-                    <h1 className="text-white text-2xl font-bold mb-8">Select User</h1>
-
-                    <div className="flex flex-col space-y-4" role="list">
-                        {availableUsers.map((user, index) => (
-                            <button
-                                key={user.username}
-                                onClick={() => handleUserSelect(user)}
-                                onKeyDown={(e) => handleUserSelectKeyDown(e, user)}
-                                className="flex items-center space-x-4 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent"
-                                aria-label={`Select ${user.displayName}, username: ${user.username}`}
-                                role="listitem"
-                                autoFocus={index === 0}
-                            >
-                                <div className="w-16 h-16 rounded-full bg-white/10 p-0.5">
-                                    <div
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            borderRadius: '9999px',
-                                            backgroundImage: `url(${user.avatar})`,
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center',
-                                            backgroundRepeat: 'no-repeat',
-                                            pointerEvents: 'none',
-                                            userSelect: 'none',
-                                        }}
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                                <div className="text-left">
-                                    <div className="text-white font-medium">{user.displayName}</div>
-                                    <div className="text-white/70 text-sm">{user.username}</div>
-                                </div>
-                            </button>
-                        ))}
+                {/* Login container */}
+                <main className={`relative z-10 flex flex-col items-center transition-all duration-300 ${isShaking ? 'animate-shake' : ''}`}>
+                    {/* Profile picture */}
+                    <div className="mb-6">
+                        <div className="w-32 h-32 rounded-full bg-white/10 p-0.5 backdrop-blur-sm">
+                            <div
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: '9999px',
+                                    backgroundImage: `url(${selectedUser.avatar})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat',
+                                    pointerEvents: 'none',
+                                    userSelect: 'none',
+                                }}
+                                aria-label={`Profile picture for ${selectedUser.displayName}`}
+                                role="img"
+                            />
+                        </div>
                     </div>
 
-                    <button
-                        onClick={handleUserSwitch}
-                        className="mt-8 text-white/70 hover:text-white text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded px-2 py-1"
-                        aria-label="Go back to login screen"
-                    >
-                        Back to Login
-                    </button>
-                </div>
+                    {/* Username */}
+                    <h1 className="text-white text-xl font-bold mb-8 -tracking-wide">
+                        {selectedUser.displayName}
+                    </h1>
+
+                    {/* Login form */}
+                    <div className="w-80">
+                        <div className="relative mb-6">
+                            <label htmlFor="password" className="sr-only">
+                                Password for {selectedUser.displayName}
+                            </label>
+                            <input
+                                id="password"
+                                ref={passwordInputRef}
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Enter password"
+                                className="w-full px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 placeholder:text-xs "
+                                autoFocus
+                                disabled={isLoading}
+                                aria-invalid={error ? 'true' : 'false'}
+                                aria-describedby={error ? 'password-error' : undefined}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleSubmit(e);
+                                    }
+                                }}
+                            />
+                            {error && (
+                                <div
+                                    id="password-error"
+                                    className="text-red-400 text-sm mt-2 text-center"
+                                    role="alert"
+                                    aria-live="polite"
+                                >
+                                    {error}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Login button */}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full py-1 text-xs border border-white/20 text-white font-medium rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
+                            aria-label={isLoading ? 'Logging in, please wait' : 'Log in to system'}
+                        >
+                            {isLoading ? 'Logging in...' : 'Log In'}
+                        </button>
+                    </div>
+
+                    {/* Bottom options */}
+                    <div className="mt-8 flex flex-col items-center space-y-4">
+                        <button
+                            onClick={handleUserSwitch}
+                            className="text-white/70 hover:text-white text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded px-2 py-1"
+                            aria-label="Switch to different user account"
+                        >
+                            Switch User
+                        </button>
+                    </div>
+                </main>
 
                 {/* Power Button */}
                 <div className="absolute bottom-6 right-6">
@@ -643,133 +773,9 @@ function Login() {
                     y={contextMenu.y}
                     onClose={hideContextMenu}
                 />
-            </div>
-        );
-    }
 
-    return (
-        <div
-            className="w-screen h-screen flex items-center justify-center overflow-hidden"
-            onContextMenu={showContextMenu}
-            style={{
-                backgroundImage: `url(${wallpaper.path})`,
-                backgroundSize: wallpaper.fit,
-                opacity: wallpaper.opacity,
-                filter: wallpaper.blur ? "blur(8px)" : "none",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-            }}
-        >
-            {/* Background blur effect */}
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-
-            {/* Screen reader announcements */}
-            <div aria-live="polite" aria-atomic="true" className="sr-only">
-                {announcement}
-            </div>
-
-            {/* Login container */}
-            <main className={`relative z-10 flex flex-col items-center transition-all duration-300 ${isShaking ? 'animate-shake' : ''}`}>
-                {/* Profile picture */}
-                <div className="mb-6">
-                    <div className="w-32 h-32 rounded-full bg-white/10 p-0.5 backdrop-blur-sm">
-                        <div
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                borderRadius: '9999px',
-                                backgroundImage: `url(${selectedUser.avatar})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat',
-                                pointerEvents: 'none',
-                                userSelect: 'none',
-                            }}
-                            aria-label={`Profile picture for ${selectedUser.displayName}`}
-                            role="img"
-                        />
-                    </div>
-                </div>
-
-                {/* Username */}
-                <h1 className="text-white text-xl font-bold mb-8 -tracking-wide">
-                    {selectedUser.displayName}
-                </h1>
-
-                {/* Login form */}
-                <div className="w-80">
-                    <div className="relative mb-6">
-                        <label htmlFor="password" className="sr-only">
-                            Password for {selectedUser.displayName}
-                        </label>
-                        <input
-                            id="password"
-                            ref={passwordInputRef}
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter password"
-                            className="w-full px-4 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200 placeholder:text-sm"
-                            autoFocus
-                            disabled={isLoading}
-                            aria-invalid={error ? 'true' : 'false'}
-                            aria-describedby={error ? 'password-error' : undefined}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSubmit(e);
-                                }
-                            }}
-                        />
-                        {error && (
-                            <div
-                                id="password-error"
-                                className="text-red-400 text-sm mt-2 text-center"
-                                role="alert"
-                                aria-live="polite"
-                            >
-                                {error}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Login button */}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full py-3 text-sm border border-white/20 text-white font-medium rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
-                        aria-label={isLoading ? 'Logging in, please wait' : 'Log in to system'}
-                    >
-                        {isLoading ? 'Logging in...' : 'Log In'}
-                    </button>
-                </div>
-
-                {/* Bottom options */}
-                <div className="mt-8 flex flex-col items-center space-y-4">
-                    <button
-                        onClick={handleUserSwitch}
-                        className="text-white/70 hover:text-white text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded px-2 py-1"
-                        aria-label="Switch to different user account"
-                    >
-                        Switch User
-                    </button>
-                </div>
-            </main>
-
-            {/* Power Button */}
-            <div className="absolute bottom-6 right-6">
-                <PowerButton />
-            </div>
-
-            {/* Context Menu */}
-            <ContextMenu
-                visible={contextMenu.visible}
-                x={contextMenu.x}
-                y={contextMenu.y}
-                onClose={hideContextMenu}
-            />
-
-            {/* Custom CSS for shake animation */}
-            <style>{`
+                {/* Custom CSS for shake animation */}
+                <style>{`
                 @keyframes shake {
                     0%, 100% { transform: translateX(0); }
                     25% { transform: translateX(-5px); }
@@ -792,7 +798,8 @@ function Login() {
                     border: 0;
                 }
             `}</style>
-        </div>
+            </div>
+        </>
     );
 }
 
