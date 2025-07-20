@@ -6,6 +6,7 @@ import { useTransition, animated } from "@react-spring/web";
 import { useEffect, useState } from "react";
 import { WebSocketAPIService } from "../../midleware";
 import AppGallery from "@/bin/appgallery";
+import SystemSettings from "@/bin/settings";
 
 const wallpaper = defaultConfig.ui.wallpaper;
 
@@ -95,6 +96,7 @@ function App() {
 
             <div className="h-screen w-screen flex items-center justify-center">
                 {/* Desktop content area */}
+                <SystemSettings/>
                 <AppGallery />
             </div>
 

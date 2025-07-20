@@ -1,5 +1,5 @@
 import React, { ReactNode, useState, useRef, useEffect, useId, useCallback } from 'react';
-import { Minus, Square, X, Maximize2 } from 'lucide-react';
+import { Minus, Square, X, Maximize2, Pin, PinOff, Copy, Info } from 'lucide-react';
 import { useActiveWindow } from '../global/hook/useactivewindow';
 
 interface WindowedContainerProps {
@@ -22,6 +22,265 @@ const TOPBAR_HEIGHT = 32; // 8 * 4 = 32px (h-8 in Tailwind)
 const DOCK_HEIGHT = 80; // Approximate dock height with padding
 const DOCK_MARGIN = 16; // bottom-4 = 16px margin
 
+// Context Menu Hook for Window
+function useWindowContextMenu() {
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0,
+  });
+
+  const showContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+    });
+  };
+
+  const hideContextMenu = () => {
+    setContextMenu(prev => ({ ...prev, visible: false }));
+  };
+
+  return {
+    contextMenu,
+    showContextMenu,
+    hideContextMenu,
+  };
+}
+
+// Window Context Menu Component
+function WindowContextMenu({
+  visible,
+  x,
+  y,
+  onClose,
+  windowState,
+  onMinimize,
+  onMaximize,
+  onCloseWindow,
+  title,
+  isAlwaysOnTop,
+  onToggleAlwaysOnTop
+}: {
+  visible: boolean;
+  x: number;
+  y: number;
+  onClose: () => void;
+  windowState: WindowState;
+  onMinimize: () => void;
+  onMaximize: () => void;
+  onCloseWindow: () => void;
+  title: string;
+  isAlwaysOnTop: boolean;
+  onToggleAlwaysOnTop: () => void;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
+  const menuItems = [
+    {
+      id: 'minimize',
+      label: 'Minimize',
+      icon: Minus,
+      action: () => {
+        onMinimize();
+        onClose();
+      },
+      disabled: windowState === 'minimized'
+    },
+    {
+      id: 'maximize',
+      label: windowState === 'maximized' ? 'Restore' : 'Maximize',
+      icon: windowState === 'maximized' ? Square : Maximize2,
+      action: () => {
+        onMaximize();
+        onClose();
+      }
+    },
+    {
+      id: 'separator1',
+      label: '',
+      icon: null,
+      action: () => {},
+      separator: true
+    },
+    {
+      id: 'alwaysOnTop',
+      label: isAlwaysOnTop ? 'Unpin from Top' : 'Pin to Top',
+      icon: isAlwaysOnTop ? PinOff : Pin,
+      action: () => {
+        onToggleAlwaysOnTop();
+        onClose();
+      }
+    },
+    {
+      id: 'copyTitle',
+      label: 'Copy Title',
+      icon: Copy,
+      action: () => {
+        navigator.clipboard.writeText(title);
+        onClose();
+      }
+    },
+    {
+      id: 'separator2',
+      label: '',
+      icon: null,
+      action: () => {},
+      separator: true
+    },
+    {
+      id: 'about',
+      label: 'Window Info',
+      icon: Info,
+      action: () => {
+        alert(`Window: ${title}\nState: ${windowState}\nAlways on Top: ${isAlwaysOnTop}`);
+        onClose();
+      }
+    },
+    {
+      id: 'separator3',
+      label: '',
+      icon: null,
+      action: () => {},
+      separator: true
+    },
+    {
+      id: 'close',
+      label: 'Close',
+      icon: X,
+      action: () => {
+        onCloseWindow();
+        onClose();
+      },
+      danger: true
+    }
+  ];
+
+  const enabledItems = menuItems.filter(item => !item.separator);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          let next = prev + 1;
+          while (next < enabledItems.length && enabledItems[next].disabled) {
+            next++;
+          }
+          return next >= enabledItems.length ? 0 : next;
+        });
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex((prev) => {
+          let next = prev - 1;
+          while (next >= 0 && enabledItems[next].disabled) {
+            next--;
+          }
+          return next < 0 ? enabledItems.length - 1 : next;
+        });
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (!enabledItems[focusedIndex].disabled) {
+          enabledItems[focusedIndex].action();
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        onClose();
+        break;
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (visible) {
+      document.addEventListener('mousedown', handleClickOutside);
+      menuRef.current?.focus();
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [visible, onClose]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      ref={menuRef}
+      role="menu"
+      aria-orientation="vertical"
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
+      className="fixed bg-zinc-800/95 backdrop-blur-md border border-zinc-600/50 rounded-lg shadow-xl z-[9999] py-1 min-w-[180px]"
+      style={{
+        left: Math.min(x, window.innerWidth - 200),
+        top: Math.min(y, window.innerHeight - 300),
+      }}
+    >
+      {menuItems.map((item, index) => {
+        if (item.separator) {
+          return (
+            <div
+              key={item.id}
+              className="h-px bg-zinc-600/50 mx-2 my-1"
+              role="separator"
+            />
+          );
+        }
+
+        const IconComponent = item.icon;
+        const enabledIndex = enabledItems.findIndex(enabled => enabled.id === item.id);
+        const isFocused = focusedIndex === enabledIndex;
+        
+        return (
+          <button
+            key={item.id}
+            role="menuitem"
+            disabled={item.disabled}
+            onClick={() => {
+              if (!item.disabled) {
+                item.action();
+              }
+            }}
+            onMouseEnter={() => {
+              if (!item.disabled) {
+                setFocusedIndex(enabledIndex);
+              }
+            }}
+            className={`w-full px-3 py-2 text-left text-zinc-300 hover:bg-zinc-700/50 transition-all duration-200 flex items-center space-x-3 focus:outline-none focus:bg-zinc-700/50 text-xs ${
+              isFocused ? 'bg-zinc-700/50' : ''
+            } ${
+              item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+            } ${
+              item.danger ? 'hover:bg-red-600/20 hover:text-red-400' : ''
+            }`}
+          >
+            {IconComponent && <IconComponent size={14} aria-hidden="true" />}
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 const WindowedContainer: React.FC<WindowedContainerProps> = ({
   title = 'Terminal',
   children,
@@ -41,6 +300,7 @@ const WindowedContainer: React.FC<WindowedContainerProps> = ({
   const [position, setPosition] = useState(initialPosition);
   const [size, setSize] = useState(initialSize);
   const [previousState, setPreviousState] = useState({ position: initialPosition, size: initialSize });
+  const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(false);
   
   // Dragging and resizing state
   const [isDragging, setIsDragging] = useState(false);
@@ -51,6 +311,14 @@ const WindowedContainer: React.FC<WindowedContainerProps> = ({
   
   // Use the active window hook
   const { registerWindow, unregisterWindow, activateWindow, updateWindowTitle, updateWindowState, activeWindow } = useActiveWindow();
+  
+  // Context menu functionality
+  const { contextMenu, showContextMenu, hideContextMenu } = useWindowContextMenu();
+  
+  // Toggle always on top
+  const handleToggleAlwaysOnTop = () => {
+    setIsAlwaysOnTop(!isAlwaysOnTop);
+  };
   
   // Register this window when mounted
   useEffect(() => {
@@ -252,7 +520,7 @@ const WindowedContainer: React.FC<WindowedContainerProps> = ({
         top: `${position.y}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        zIndex: isActive ? zIndex + 10 : zIndex,
+        zIndex: isAlwaysOnTop ? zIndex + 100 : (isActive ? zIndex + 10 : zIndex),
         boxShadow: isActive 
           ? '0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)'
           : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
@@ -310,6 +578,7 @@ const WindowedContainer: React.FC<WindowedContainerProps> = ({
         }`}
         onMouseDown={handleMouseDown}
         onDoubleClick={handleMaximize}
+        onContextMenu={showContextMenu}
       >
         <div className="flex items-center justify-between">
           <div className="text-xs font-extrabold text-zinc-300 truncate">{title}</div>
