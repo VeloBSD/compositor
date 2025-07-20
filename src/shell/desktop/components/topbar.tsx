@@ -28,6 +28,9 @@ function Topbar({ onSync }: TopbarProps) {
     const { menuState, menuRef, toggleMenu, closeMenu } = useMenu();
     const { activeWindow } = useActiveWindow();
 
+    // Check if there's a maximized window
+    const hasMaximizedWindow = activeWindow && activeWindow.state === 'maximized';
+
     // Update time every minute
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -93,7 +96,9 @@ function Topbar({ onSync }: TopbarProps) {
 
     return (
         <>
-            <div className="h-8 fixed text-xs w-screen flex items-center justify-between px-4 z-20 invert">
+            <div className={`h-8 fixed text-xs w-screen flex items-center justify-between px-4 invert transition-all duration-200 ${
+                hasMaximizedWindow ? 'z-50 bg-white/90 backdrop-blur-sm' : 'z-20'
+            }`}>
                 <div className="items-center gap-2 flex">
                     <div>
                         <b className='font-extrabold'>Workspace</b>
@@ -118,14 +123,12 @@ function Topbar({ onSync }: TopbarProps) {
                             Edit
                         </div>
                         <div
-                            className="hover:bg-black/10 px-2 py-1 rounded cursor-pointe font-medium"
+                            className="hover:bg-black/10 px-2 py-1 rounded cursor-pointer font-medium"
                             onClick={(e) => toggleMenu('help', e.currentTarget.getBoundingClientRect().left, e.currentTarget.getBoundingClientRect().bottom)}
                         >
                             Help
                         </div>
                     </div>
-
-
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -163,7 +166,7 @@ function Topbar({ onSync }: TopbarProps) {
             {menuState.isOpen && (
                 <div
                     ref={menuRef}
-                    className="fixed border border-[#4b4b4b] shadow-lg rounded-md  z-50 min-w-[150px] text-white backdrop-blur-md bg-[#20202057]"
+                    className="fixed border border-[#4b4b4b] shadow-lg rounded-md z-50 min-w-[150px] text-white backdrop-blur-md bg-[#20202057]"
                     style={{
                         top: `${menuState.position.y}px`,
                         left: `${menuState.position.x}px`

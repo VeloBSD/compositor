@@ -1,5 +1,5 @@
-import Topbar from "./topbar";
-import Dock from "./dock";
+import Topbar from "./components/topbar";
+import Dock from "./components/dock";
 import { defaultConfig } from "../../config/default";
 import Cursor from "../../assets/cursor.svg";
 import { useTransition, animated } from "@react-spring/web";
@@ -76,14 +76,6 @@ function App() {
         }
     };
 
-    const getConnectionStatusText = () => {
-        switch (connectionStatus) {
-            case 'connected': return '🟢 Connected';
-            case 'connecting': return '🟡 Connecting...';
-            case 'disconnected': return '🔴 Disconnected';
-            default: return '⚪ Unknown';
-        }
-    };
 
     return (
         <main className=""

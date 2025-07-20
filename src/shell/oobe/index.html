@@ -1,3 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="index1.css" />
+</head>
+<style>
+
+  :root {
+    user-select: none;
+  }
+
+  ::-webkit-scrollbar {
+  width: 8px; /* 1px wider than Lion. */
+  /* This is more usable for users trying to click it. */
+  background-color: rgba(0,0,0,0);
+  -webkit-border-radius: 100px;
+}
+/* hover effect for both scrollbar area, and scrollbar 'thumb' */
+::-webkit-scrollbar:hover {
+  background-color: rgba(0, 0, 0, 0.09);
+}
+
+/* The scrollbar 'thumb' ...that marque oval shape in a scrollbar */
+::-webkit-scrollbar-thumb:vertical {
+  /* This is the EXACT color of Mac OS scrollbars. 
+     Yes, I pulled out digital color meter */
+  background: rgba(0,0,0,0.5);
+  -webkit-border-radius: 100px;
+}
+::-webkit-scrollbar-thumb:vertical:active {
+  background: rgba(0,0,0,0.61); /* Some darker color when you click it */
+  -webkit-border-radius: 100px;
+}
+
+
+/* @import "../styles/inter.css"; */
+/* CSS */
+:root {
+  font-family: Inter, Sarabun, sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  background-color: black;
+  /* fix for Chrome */
+  letter-spacing: -0.02em;
+}
+
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: InterVariable,Sarabun,  sans-serif;
+  }
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes slide {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 256px 224px;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion) {
+
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+  }
+}
+
 /*
 Font families defined by this CSS:
   - InterVariable  variable font for modern web browsers
@@ -733,3 +824,10 @@ Usage example:
   src: url(https://fonts.gstatic.com/s/sarabun/v16/DtVmJx26TKEr37c9YLJvilss6w.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+</style>
+<body>
+  <div id="root"></div>
+  <script type="module" src="./main.tsx"></script>
+</body>
+
+</html>

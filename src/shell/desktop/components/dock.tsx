@@ -13,6 +13,7 @@ import {
   Calendar,
   Folder
 } from 'lucide-react';
+import { useActiveWindow } from '@/components/global/hook/useactivewindow';
 
 interface DockItemProps {
   icon: React.ReactNode;
@@ -55,6 +56,11 @@ const DockItem: React.FC<DockItemProps> = ({ icon, label, onClick }) => {
 };
 
 const Dock: React.FC = () => {
+  const { activeWindow } = useActiveWindow();
+  
+  // Check if there's a maximized window
+  const hasMaximizedWindow = activeWindow && activeWindow.state === 'maximized';
+
   const dockItems = [
     { icon: <Home size={24} />, label: 'Home' },
     { icon: <Folder size={24} />, label: 'Files' },
@@ -76,13 +82,19 @@ const Dock: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-30">
-      <div className="
+    <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 transition-all duration-200 ${
+      hasMaximizedWindow ? 'z-50' : 'z-30'
+    }`}>
+      <div className={`
         flex items-center gap-2 px-4 py-3
-        bg-black/40 backdrop-blur-md rounded-2xl
-        border border-white/20 shadow-2xl
+        rounded-2xl border border-white/20 shadow-2xl
         transition-all duration-300 ease-out
-      ">
+        ${
+          hasMaximizedWindow 
+            ? 'bg-black/60 backdrop-blur-lg border-white/30' 
+            : 'bg-black/40 backdrop-blur-md'
+        }
+      `}>
         {dockItems.map((item, index) => (
           <DockItem
             key={index}

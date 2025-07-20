@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 
+export type WindowState = 'normal' | 'maximized' | 'minimized';
+
 export interface ActiveWindowInfo {
   id: string;
   title: string;
   isActive: boolean;
+  state: WindowState;
 }
 
 interface UseActiveWindowReturn {
@@ -14,6 +17,7 @@ interface UseActiveWindowReturn {
   unregisterWindow: (id: string) => void;
   activateWindow: (id: string) => void;
   updateWindowTitle: (id: string, title: string) => void;
+  updateWindowState: (id: string, state: WindowState) => void;
 }
 
 // Create a singleton instance to share state across components
@@ -52,7 +56,8 @@ export function useActiveWindow(): UseActiveWindowReturn {
     if (windowRegistry.has(windowInfo.id)) {
       windowRegistry.set(windowInfo.id, {
         ...windowRegistry.get(windowInfo.id)!,
-        isActive: true
+        isActive: true,
+        state: windowInfo.state
       });
     }
     
@@ -72,10 +77,11 @@ export function useActiveWindow(): UseActiveWindowReturn {
   };
 
   const registerWindow = (id: string, title: string) => {
-    const windowInfo = {
+    const windowInfo: ActiveWindowInfo = {
       id,
       title,
-      isActive: false
+      isActive: false,
+      state: 'normal'
     };
     
     windowRegistry.set(id, windowInfo);
@@ -110,6 +116,20 @@ export function useActiveWindow(): UseActiveWindowReturn {
     }
   };
 
+  const updateWindowState = (id: string, state: WindowState) => {
+    const windowInfo = windowRegistry.get(id);
+    if (windowInfo) {
+      const updatedInfo = { ...windowInfo, state };
+      windowRegistry.set(id, updatedInfo);
+      
+      // If this is the active window, update active window state
+      if (activeWindowState?.id === id) {
+        activeWindowState = updatedInfo;
+        notifyListeners();
+      }
+    }
+  };
+
   return {
     activeWindow,
     setActiveWindow,
@@ -117,6 +137,7 @@ export function useActiveWindow(): UseActiveWindowReturn {
     registerWindow,
     unregisterWindow,
     activateWindow,
-    updateWindowTitle
+    updateWindowTitle,
+    updateWindowState
   };
 }

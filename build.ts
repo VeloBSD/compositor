@@ -37,6 +37,8 @@ Example:
 
 // Helper function to convert kebab-case to camelCase
 const toCamelCase = (str: string): string => {
+  // Special case for sourcemap to match Bun's API
+  if (str === 'source-map') return 'sourcemap';
   return str.replace(/-([a-z])/g, g => g[1].toUpperCase());
 };
 
@@ -94,6 +96,9 @@ function parseArgs(): Partial<BuildConfig> {
     // Convert kebab-case key to camelCase
     key = toCamelCase(key);
 
+    // Handle special cases for Bun API compatibility
+    if (key === 'sourceMap') key = 'sourcemap';
+
     // Handle nested properties (e.g. --minify.whitespace)
     if (key.includes(".")) {
       const [parentKey, childKey] = key.split(".");
@@ -135,29 +140,35 @@ if (existsSync(outdir)) {
 const start = performance.now();
 
 // Scan for all HTML files in the project
-const entrypoints = [...new Bun.Glob("**.html").scanSync("src")]
+const entrypoints = [...new Bun.Glob("**/*.html").scanSync("src")]
   .map(a => path.resolve("src", a))
   .filter(dir => !dir.includes("node_modules"));
 console.log(`📄 Found ${entrypoints.length} HTML ${entrypoints.length === 1 ? "file" : "files"} to process\n`);
 
 // Build all the HTML files
-const result = await build({
-  entrypoints,
-  outdir,
-  plugins: [plugin],
-  minify: true,
-  target: "browser",
-  sourcemap: "linked",
-  define: {
-    "process.env.NODE_ENV": JSON.stringify("production"),
-  },
-  ...cliConfig, // Merge in any CLI-provided options
-});
+// Build each HTML file separately to avoid naming conflicts
+const results = [];
+for (const entrypoint of entrypoints) {
+  const entrypointName = path.basename(path.dirname(entrypoint));
+  const result = await build({
+    entrypoints: [entrypoint],
+    outdir: path.join(outdir, entrypointName),
+    plugins: [plugin],
+    minify: true,
+    target: "browser",
+    sourcemap: "linked",
+    define: {
+      "process.env.NODE_ENV": JSON.stringify("production"),
+    },
+    ...cliConfig,
+  });
+  results.push(...result.outputs);
+}
 
 // Print the results
 const end = performance.now();
 
-const outputTable = result.outputs.map(output => ({
+const outputTable = results.map(output => ({
   "File": path.relative(process.cwd(), output.path),
   "Type": output.kind,
   "Size": formatFileSize(output.size),
