@@ -1,143 +1,50 @@
-import { useState, useEffect } from 'react';
+import { useWindowStore, useActiveWindow as useActiveWindowSelector, useAllWindows, WindowInfo, WindowState } from '../../../stores/windowStore';
 
-export type WindowState = 'normal' | 'maximized' | 'minimized';
-
-export interface ActiveWindowInfo {
-  id: string;
-  title: string;
-  isActive: boolean;
-  state: WindowState;
-}
+export type { WindowState } from '../../../stores/windowStore';
+export type { WindowInfo as ActiveWindowInfo } from '../../../stores/windowStore';
 
 interface UseActiveWindowReturn {
-  activeWindow: ActiveWindowInfo | null;
-  setActiveWindow: (windowInfo: ActiveWindowInfo) => void;
+  activeWindow: WindowInfo | null;
+  allWindows: WindowInfo[];
+  setActiveWindow: (windowInfo: WindowInfo) => void;
   clearActiveWindow: () => void;
   registerWindow: (id: string, title: string) => void;
   unregisterWindow: (id: string) => void;
   activateWindow: (id: string) => void;
   updateWindowTitle: (id: string, title: string) => void;
   updateWindowState: (id: string, state: WindowState) => void;
+  closeWindow: (id: string) => void;
 }
 
-// Create a singleton instance to share state across components
-let activeWindowState: ActiveWindowInfo | null = null;
-let windowRegistry: Map<string, ActiveWindowInfo> = new Map();
-let listeners: Set<(window: ActiveWindowInfo | null) => void> = new Set();
-
-const notifyListeners = () => {
-  listeners.forEach(listener => listener(activeWindowState));
-};
-
 export function useActiveWindow(): UseActiveWindowReturn {
-  const [activeWindow, setActiveWindowState] = useState<ActiveWindowInfo | null>(activeWindowState);
+  const {
+    activateWindow,
+    clearActiveWindow,
+    registerWindow,
+    unregisterWindow,
+    updateWindowTitle,
+    updateWindowState,
+    closeWindow
+  } = useWindowStore();
+  
+  // Use the stable selectors instead of function calls
+  const activeWindow = useActiveWindowSelector();
+  const allWindows = useAllWindows();
 
-  useEffect(() => {
-    // Subscribe to changes
-    const listener = (window: ActiveWindowInfo | null) => {
-      setActiveWindowState(window);
-    };
-    
-    listeners.add(listener);
-    
-    // Initial state
-    setActiveWindowState(activeWindowState);
-    
-    return () => {
-      listeners.delete(listener);
-    };
-  }, []);
-
-  const setActiveWindow = (windowInfo: ActiveWindowInfo) => {
-    // Update the active window
-    activeWindowState = windowInfo;
-    
-    // Update registry
-    if (windowRegistry.has(windowInfo.id)) {
-      windowRegistry.set(windowInfo.id, {
-        ...windowRegistry.get(windowInfo.id)!,
-        isActive: true,
-        state: windowInfo.state
-      });
-    }
-    
-    // Deactivate other windows
-    windowRegistry.forEach((info, id) => {
-      if (id !== windowInfo.id && info.isActive) {
-        windowRegistry.set(id, { ...info, isActive: false });
-      }
-    });
-    
-    notifyListeners();
-  };
-
-  const clearActiveWindow = () => {
-    activeWindowState = null;
-    notifyListeners();
-  };
-
-  const registerWindow = (id: string, title: string) => {
-    const windowInfo: ActiveWindowInfo = {
-      id,
-      title,
-      isActive: false,
-      state: 'normal'
-    };
-    
-    windowRegistry.set(id, windowInfo);
-  };
-
-  const unregisterWindow = (id: string) => {
-    if (activeWindowState?.id === id) {
-      clearActiveWindow();
-    }
-    
-    windowRegistry.delete(id);
-  };
-
-  const activateWindow = (id: string) => {
-    const windowInfo = windowRegistry.get(id);
-    if (windowInfo) {
-      setActiveWindow({ ...windowInfo, isActive: true });
-    }
-  };
-
-  const updateWindowTitle = (id: string, title: string) => {
-    const windowInfo = windowRegistry.get(id);
-    if (windowInfo) {
-      const updatedInfo = { ...windowInfo, title };
-      windowRegistry.set(id, updatedInfo);
-      
-      // If this is the active window, update active window state
-      if (activeWindowState?.id === id) {
-        activeWindowState = updatedInfo;
-        notifyListeners();
-      }
-    }
-  };
-
-  const updateWindowState = (id: string, state: WindowState) => {
-    const windowInfo = windowRegistry.get(id);
-    if (windowInfo) {
-      const updatedInfo = { ...windowInfo, state };
-      windowRegistry.set(id, updatedInfo);
-      
-      // If this is the active window, update active window state
-      if (activeWindowState?.id === id) {
-        activeWindowState = updatedInfo;
-        notifyListeners();
-      }
-    }
+  const setActiveWindow = (windowInfo: WindowInfo) => {
+    activateWindow(windowInfo.id);
   };
 
   return {
     activeWindow,
+    allWindows,
     setActiveWindow,
     clearActiveWindow,
     registerWindow,
     unregisterWindow,
     activateWindow,
     updateWindowTitle,
-    updateWindowState
+    updateWindowState,
+    closeWindow
   };
 }

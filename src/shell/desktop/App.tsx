@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { WebSocketAPIService } from "../../midleware";
 import AppGallery from "@/bin/appgallery";
 import SystemSettings from "@/bin/settings";
+import WindowOverview from "./components/WindowOverview";
 
 const wallpaper = defaultConfig.ui.wallpaper;
 
@@ -14,6 +15,7 @@ function App() {
     const [systemStatus, setSystemStatus] = useState<any>(null);
     const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
     const [wsService] = useState(() => WebSocketAPIService.getInstance());
+    const [showWindowOverview, setShowWindowOverview] = useState(false);
 
     useEffect(() => {
         // Initialize WebSocket connection
@@ -67,6 +69,25 @@ function App() {
         };
     }, [wsService]);
 
+    // Keyboard event handler for window overview
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            // Ctrl + Arrow Up to show window overview
+            if (event.ctrlKey && event.key === 'ArrowUp') {
+                event.preventDefault();
+                setShowWindowOverview(true);
+            }
+            // Escape to close window overview
+            else if (event.key === 'Escape' && showWindowOverview) {
+                event.preventDefault();
+                setShowWindowOverview(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [showWindowOverview]);
+
     // Connection status indicator
     const getConnectionStatusColor = () => {
         switch (connectionStatus) {
@@ -76,7 +97,6 @@ function App() {
             default: return 'text-gray-400';
         }
     };
-
 
     return (
         <main className=""
@@ -92,13 +112,23 @@ function App() {
         >
             <Topbar />
 
-
-
             <div className="h-screen w-screen flex items-center justify-center">
                 {/* Desktop content area */}
-                <SystemSettings/>
-                <AppGallery />
+                {!showWindowOverview && (
+                    <>
+                        <SystemSettings/>
+                        <AppGallery />
+                    </>
+                )}
             </div>
+
+            {/* Window Overview */}
+            {showWindowOverview && (
+                <WindowOverview 
+                    onClose={() => setShowWindowOverview(false)}
+                    onWindowSelect={() => setShowWindowOverview(false)}
+                />
+            )}
 
             <Dock />
         </main>
