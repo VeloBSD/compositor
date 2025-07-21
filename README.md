@@ -2,6 +2,8 @@
 
 A modern, web-based desktop environment compositor built with React, TypeScript, and C, designed for Linux/BSD systems. This project combines a sleek web frontend with a powerful C-based backend API for comprehensive desktop session management.
 
+<img width="1920" height="1080" alt="imaage" src="https://github.com/user-attachments/assets/ab548c5c-309b-413d-a0ab-834ceb41dc63" />
+
 ## 🌟 Features
 
 ### Frontend (Web Compositor)
