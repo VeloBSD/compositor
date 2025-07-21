@@ -245,6 +245,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Tailwind CSS](https://tailwindcss.com/) for styling
 - [json-c](https://github.com/json-c/json-c) for JSON parsing in C
 - [OpenSSL](https://www.openssl.org/) for cryptographic functions
+- [X11](https://www.x.org/) for windowing system
+- [CEF](https://bitbucket.org/chromiumembedded/cef) for Chromium Embedded Framework
 
 ## 📞 Support
 
